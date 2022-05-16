@@ -1,24 +1,42 @@
 import React, {useState} from "react";
-import { Text, View, StyleSheet, TextInput, TouchableWithoutFeedback, Animated } from 'react-native'
+import { Text, View, StyleSheet, TextInput, TouchableWithoutFeedback, Animated, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
-const Formulario = ({busqueda, guardarBusqueda}) => {
+const Formulario = ({busqueda, guardarBusqueda, guardarConsultar}) => {
 
     const {pais, ciudad} = busqueda;
 
     const [ animacionBoton ] = useState(new Animated.Value(1));
 
+    const consultarClima = () => {
+        if(pais.trim() === '' || ciudad.trim() === '' ) {
+            mostrarAlerta();
+            return;
+        }
+
+        //Consultar la API
+        guardarConsultar(true) 
+    }
+    const mostrarAlerta = () => {
+        Alert.alert(
+            'Error',
+            'Agrega una ciudad y un país para la búsqueda',
+            [{ text: 'Entendido'}]
+        )
+    }
+
     const animacionEntrada = () => {
         Animated.spring(animacionBoton, {
-            toValue: .9
+            toValue: .9,
+            useNativeDriver: true
         }).start();
     }
     const animacionSalida = () => {
         Animated.spring(animacionBoton, {
             toValue: 1,
             friction: 4, //controla el rebote
-            tension: 30  //cuanto mas bajo, mas suavidad del movimiento
-
+            tension: 30,  //cuanto mas bajo, mas suavidad del movimiento
+            useNativeDriver: true
         }).start();
     }
 
@@ -29,13 +47,15 @@ const Formulario = ({busqueda, guardarBusqueda}) => {
     return (  
         <>
             <View>
-                <View>
+                <View style={styles.formulario}>
                     <TextInput 
                         value={ciudad}
                         style={styles.input}
-                        onChangeText={ ciudad => guardarBusqueda({ ...busqueda, ciudad}) } 
+                        onChangeText={ ciudad => guardarBusqueda({ ...busqueda, ciudad}) }
                         placeholder="Ciudad"
                         placeholderTextColor='#666'
+                        
+
                     />
                 </View>
                 <View>
@@ -57,6 +77,7 @@ const Formulario = ({busqueda, guardarBusqueda}) => {
                 <TouchableWithoutFeedback
                     onPressIn={ () => animacionEntrada() } //cuando presionas
                     onPressOut={ () => animacionSalida() } //cuando sueltas //Ambas solo en WithoutFeedback, no esta en Highlight
+                    onPress={ () => consultarClima() }
                 >
                     <Animated.View
                         style={[styles.btnBuscar, estiloAnimacion]}
